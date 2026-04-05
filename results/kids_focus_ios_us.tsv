@@ -1,0 +1,8 @@
+commit	total_score	status	description
+baseline	55.01	keep	baseline
+de620c6	67.88	keep	Exp 1
+0ece89e	68.20	keep	Exp 2
+b776309	73.51	keep	Exp 6
+4248c89	74.34	keep	Exp 8
+4cd306f	76.66	keep	Exp 9
+4cd306f865f81838592a964ddcb9e534f2997295	74.88	discard	Exp 10

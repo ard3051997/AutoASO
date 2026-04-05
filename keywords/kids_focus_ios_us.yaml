@@ -1,0 +1,150 @@
+app: kids_focus
+platform: ios
+locale: us
+
+# ─────────────────────────────────────────────
+# 3D Keyword Framework — Kids Focus iOS US
+# Tier:   northstar | primary | secondary | tertiary
+# Volume: AppFollow/SensorTower popularity score (0-100)
+# Diff:   Keyword difficulty (0-100, higher = harder)
+# ─────────────────────────────────────────────
+
+keywords:
+
+  # ── NorthStar: Must appear in title or subtitle ──────────────────
+  - keyword: "screen time"
+    tier: northstar
+    volume: 82
+    difficulty: 68
+    cluster: screen_time
+
+  - keyword: "parental control"
+    tier: northstar
+    volume: 78
+    difficulty: 72
+    cluster: parental
+
+  - keyword: "parent controls"
+    tier: northstar
+    volume: 65
+    difficulty: 60
+    cluster: parental
+
+  # ── Primary: Aim for title / subtitle / keyword field ────────────
+  - keyword: "app lock"
+    tier: primary
+    volume: 58
+    difficulty: 50
+    cluster: control
+
+  - keyword: "kids phone"
+    tier: primary
+    volume: 52
+    difficulty: 48
+    cluster: kids
+
+  - keyword: "screen limit"
+    tier: primary
+    volume: 48
+    difficulty: 42
+    cluster: screen_time
+
+  - keyword: "child lock"
+    tier: primary
+    volume: 45
+    difficulty: 40
+    cluster: control
+
+  - keyword: "family control"
+    tier: primary
+    volume: 44
+    difficulty: 45
+    cluster: parental
+
+  # ── Secondary: Keyword field / short description ─────────────────
+  - keyword: "child safety"
+    tier: secondary
+    volume: 38
+    difficulty: 35
+    cluster: safety
+
+  - keyword: "phone monitor"
+    tier: secondary
+    volume: 35
+    difficulty: 32
+    cluster: monitoring
+
+  - keyword: "focus mode"
+    tier: secondary
+    volume: 32
+    difficulty: 28
+    cluster: focus
+
+  - keyword: "screen blocker"
+    tier: secondary
+    volume: 30
+    difficulty: 30
+    cluster: screen_time
+
+  - keyword: "kids tablet"
+    tier: secondary
+    volume: 28
+    difficulty: 30
+    cluster: kids
+
+  - keyword: "app timer"
+    tier: secondary
+    volume: 26
+    difficulty: 22
+    cluster: time_management
+
+  # ── Tertiary: Nice to have in keyword field / description ─────────
+  - keyword: "digital wellbeing"
+    tier: tertiary
+    volume: 20
+    difficulty: 20
+    cluster: wellness
+
+  - keyword: "phone limit"
+    tier: tertiary
+    volume: 18
+    difficulty: 20
+    cluster: screen_time
+
+  - keyword: "bedtime mode"
+    tier: tertiary
+    volume: 15
+    difficulty: 18
+    cluster: wellness
+
+  - keyword: "family safety"
+    tier: tertiary
+    volume: 14
+    difficulty: 22
+    cluster: safety
+
+  - keyword: "child protection"
+    tier: tertiary
+    volume: 12
+    difficulty: 25
+    cluster: safety
+
+# ─────────────────────────────────────────────
+# Dead-weight blacklist (agent must NEVER use these)
+# ─────────────────────────────────────────────
+blacklist:
+  - amazing
+  - best
+  - cool
+  - awesome
+  - great
+  - top
+  - easy
+  - simple
+  - smart
+  - powerful
+  - ultimate
+  - perfect
+  - super
+  - leading
+  - premier

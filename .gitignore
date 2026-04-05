@@ -1,0 +1,16 @@
+.DS_Store
+__pycache__/
+*.log
+results/*.tsv
+!results/kids_focus_ios_us.tsv
+.venv/
+env/
+.env
+v1/
+v2/
+*.tmp
+temp/
+node_modules/
+.idea/
+.vscode/
+.git/
