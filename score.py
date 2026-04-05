@@ -36,12 +36,13 @@ import yaml
 
 WEIGHTS = {
     "coverage":        0.25,
-    "placement":       0.25,
+    "placement":       0.20,
     "efficiency":      0.15,
     "phrase_coverage": 0.10,
-    "duplication":     0.10,   # penalty — higher duplication = lower score
+    "duplication":     0.05,   # penalty — higher duplication = lower score
     "northstar":       0.10,
     "naturalness":     0.05,
+    "density":         0.10,
 }
 
 # Dead-weight words that contribute zero ranking signal
@@ -217,11 +218,21 @@ def score_efficiency(metadata: dict, platform: str) -> float:
             scores.append(0.0)
             continue
 
-        # Character utilization (not wasting budget)
+        # Character utilization with strict targets
         char_used = len(raw)
         char_limit = limits[field]
+        
         utilization = min(char_used / char_limit, 1.0)
-
+        
+        # Stringent Length Penalties (From ASOScorer Benchmarks)
+        if field == "title" and char_used < 25:
+            utilization *= 0.8  # Penalty for not maximizing title space
+        if platform == "gplay" and field == "long_description":
+            if char_used < 500:
+                utilization *= 0.2
+            elif char_used < 2000:
+                utilization *= 0.7  # Target is 2000+ chars
+        
         # Dead-weight penalty
         words = normalize(raw).split()
         dead = sum(1 for w in words if w in DEAD_WEIGHT_WORDS)
@@ -234,6 +245,48 @@ def score_efficiency(metadata: dict, platform: str) -> float:
     if not scores:
         return 100.0
     return round(sum(scores) / len(scores), 2)
+
+
+def score_density(metadata: dict, keywords: list) -> float:
+    """
+    Keyword Density (10%): Optimal density is 3-5%.
+    Too low or too high stuffing is penalized.
+    (Derived from user's ASOScorer benchmarks)
+    """
+    # Combine all text
+    all_text = " ".join(normalize(str(v)) for k, v in metadata.items() if k in ["title", "subtitle", "keyword_field", "short_description", "long_description"])
+    words = all_text.split()
+    total_words = len(words)
+    
+    if total_words == 0:
+        return 0.0
+
+    # Count matching keyword phrases
+    kw_hits = 0
+    for kw_entry in keywords:
+        kw = normalize(kw_entry["keyword"])
+        kw_len = len(kw.split())
+        # Simplistic sliding window count for exact phrase matches
+        for i in range(len(words) - kw_len + 1):
+            if " ".join(words[i:i+kw_len]) == kw:
+                kw_hits += kw_len # Count total words occupied by keywords
+                
+    density = (kw_hits / total_words) * 100
+
+    # Benchmark: 2% min, 3-5% optimal, > 8% penalty
+    if 3.0 <= density <= 5.0:
+        return 100.0
+    elif 2.0 <= density < 3.0:
+        return 80.0
+    elif density < 2.0:
+        return (density / 2.0) * 80  # Scale up to 80
+    elif density > 8.0:
+        # High penalty for keyword stuffing
+        excess = density - 5.0
+        return max(100.0 - (excess * 15), 0.0)
+    else: # 5.0 < density <= 8.0
+        excess = density - 5.0
+        return max(100.0 - (excess * 8), 0.0)
 
 
 def score_phrase_coverage(keywords: list, fields: dict) -> float:
@@ -375,6 +428,7 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
     duplication = score_duplication(metadata, platform)
     northstar   = score_northstar(keywords, fields, platform)
     naturalness = score_naturalness(metadata, platform)
+    density     = score_density(metadata, keywords)
 
     # Duplication is a penalty — we invert it in the total
     total = (
@@ -384,7 +438,8 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
         WEIGHTS["phrase_coverage"] * phrase_cov +
         WEIGHTS["duplication"]     * (100 - duplication) +
         WEIGHTS["northstar"]       * northstar +
-        WEIGHTS["naturalness"]     * naturalness
+        WEIGHTS["naturalness"]     * naturalness +
+        WEIGHTS["density"]         * density
     )
 
     return {
@@ -396,6 +451,7 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
         "duplication":      duplication,
         "northstar":        northstar,
         "naturalness":      naturalness,
+        "density":          density,
         "char_usage":       char_usage(metadata, platform),
         "platform":         platform,
         "locale":           metadata.get("locale", "unknown"),
@@ -413,6 +469,7 @@ def print_score(result: dict):
     print(f"duplication:      {result['duplication']:.2f}")
     print(f"northstar:        {result['northstar']:.2f}")
     print(f"naturalness:      {result['naturalness']:.2f}")
+    print(f"density:          {result['density']:.2f}")
     print(f"platform:         {result['platform']}")
     print(f"locale:           {result['locale']}")
     print(f"char_usage:       {result['char_usage']}")

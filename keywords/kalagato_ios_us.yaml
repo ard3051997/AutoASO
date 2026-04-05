@@ -1,0 +1,58 @@
+app: kalagato
+platform: ios
+locale: us
+
+# ─────────────────────────────────────────────
+# 3D Keyword Framework (Auto-generated via AppFollow Sync)
+# ─────────────────────────────────────────────
+
+keywords:
+  - keyword: "screen time"
+    tier: northstar
+    volume: 82
+    difficulty: 68
+    cluster: auto_assigned
+
+  - keyword: "parental control"
+    tier: northstar
+    volume: 78
+    difficulty: 72
+    cluster: auto_assigned
+
+  - keyword: "app lock"
+    tier: primary
+    volume: 58
+    difficulty: 50
+    cluster: auto_assigned
+
+  - keyword: "child safety"
+    tier: secondary
+    volume: 38
+    difficulty: 35
+    cluster: auto_assigned
+
+  - keyword: "digital wellbeing"
+    tier: tertiary
+    volume: 20
+    difficulty: 20
+    cluster: auto_assigned
+
+# ─────────────────────────────────────────────
+# Dead-weight blacklist
+# ─────────────────────────────────────────────
+blacklist:
+  - amazing
+  - best
+  - cool
+  - awesome
+  - great
+  - top
+  - easy
+  - simple
+  - smart
+  - powerful
+  - ultimate
+  - perfect
+  - super
+  - leading
+  - premier
