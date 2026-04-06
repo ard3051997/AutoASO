@@ -6,6 +6,12 @@ Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch),
 
 ---
 
+## Architecture
+
+<p align="center">
+  <img src="assets/architecture.png" alt="AutoASO optimization loop" width="640">
+</p>
+
 ## The Core Concept
 
 *One day, App Store Optimization used to be done by meat computers—human marketers staring at difficulty matrices on spreadsheets and guessing combinations. That era is fading. ASO is structurally becoming the domain of autonomous swarms of AI agents running endless optimizations in the skies overnight. This repo encodes the physics of the App Store algorithm into a local engine.*
