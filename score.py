@@ -402,6 +402,63 @@ def score_naturalness(metadata: dict, platform: str) -> float:
 
 
 # ---------------------------------------------------------------------------
+# Simulated Ranking Model (V2)
+# ---------------------------------------------------------------------------
+
+def simulate_keyword_ranks(keywords: list, fields: dict, platform: str) -> tuple[float, float]:
+    """
+    V2 Ranking Model: Estimates rank positions based on placement, volume, and difficulty.
+    Returns (avg_rank, estimated_installs)
+    """
+    if not keywords:
+        return (100.0, 0.0)
+        
+    total_installs = 0.0
+    total_ranks = 0.0
+    
+    # Base rank potentials depending on where the keyword is placed
+    placement_potentials = {
+        "ios": {"title": 1, "subtitle": 5, "keyword_field": 15},
+        "gplay": {"title": 1, "short_description": 5, "long_description": 25}
+    }
+    
+    pots = placement_potentials.get(platform, placement_potentials["ios"])
+
+    for kw_entry in keywords:
+        kw = kw_entry["keyword"]
+        diff = float(kw_entry.get("difficulty", 50))
+        vol = float(kw_entry.get("volume", 10))
+        
+        # Check highest placement
+        base_rank = 150 # default unranked
+        for field, potential in pots.items():
+            if field in fields and keyword_in_field(kw, fields[field]):
+                if potential < base_rank:
+                    base_rank = potential
+                    
+        # Apply inverse difficulty penalty: high difficulty pushes rank down
+        if base_rank < 150:
+            rank = base_rank + (diff / 2.0)
+        else:
+            rank = 150.0
+            
+        total_ranks += rank
+        
+        # Click-through rate (CTR) based on App Store benchmarks
+        if rank <= 1: ctr = 0.45
+        elif rank <= 3: ctr = 0.25
+        elif rank <= 5: ctr = 0.10
+        elif rank <= 10: ctr = 0.05
+        elif rank <= 20: ctr = 0.01
+        else: ctr = 0.0
+        
+        total_installs += (vol * ctr * 10) # synthetic multiplier
+        
+    avg_rank = round(total_ranks / len(keywords), 2)
+    return avg_rank, round(total_installs, 2)
+
+
+# ---------------------------------------------------------------------------
 # Character Usage Report
 # ---------------------------------------------------------------------------
 
@@ -429,9 +486,11 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
     northstar   = score_northstar(keywords, fields, platform)
     naturalness = score_naturalness(metadata, platform)
     density     = score_density(metadata, keywords)
+    
+    avg_rank, est_installs = simulate_keyword_ranks(keywords, fields, platform)
 
-    # Duplication is a penalty — we invert it in the total
-    total = (
+    # Base heuristic total
+    base_total = (
         WEIGHTS["coverage"]        * coverage +
         WEIGHTS["placement"]       * placement +
         WEIGHTS["efficiency"]      * efficiency +
@@ -441,6 +500,12 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
         WEIGHTS["naturalness"]     * naturalness +
         WEIGHTS["density"]         * density
     )
+    
+    # Value Optimization: Blend heuristics with simulated installs
+    # Max heuristic is 100. Installs vary arbitrarily. We add a log curve boost for installs.
+    import math
+    install_bonus = math.log(max(est_installs, 1)) * 5.0
+    total = min(100.0, (base_total * 0.75) + install_bonus)
 
     return {
         "total_score":      round(total, 2),
@@ -452,6 +517,8 @@ def compute_score(metadata: dict, keywords: list, platform: str) -> dict:
         "northstar":        northstar,
         "naturalness":      naturalness,
         "density":          density,
+        "avg_keyword_rank": avg_rank,
+        "estimated_installs": est_installs,
         "char_usage":       char_usage(metadata, platform),
         "platform":         platform,
         "locale":           metadata.get("locale", "unknown"),
@@ -470,6 +537,8 @@ def print_score(result: dict):
     print(f"northstar:        {result['northstar']:.2f}")
     print(f"naturalness:      {result['naturalness']:.2f}")
     print(f"density:          {result['density']:.2f}")
+    print(f"avg_keyword_rank: {result['avg_keyword_rank']:.2f}")
+    print(f"est_installs:     {result['estimated_installs']:.2f}")
     print(f"platform:         {result['platform']}")
     print(f"locale:           {result['locale']}")
     print(f"char_usage:       {result['char_usage']}")

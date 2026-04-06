@@ -1,12 +1,6 @@
 app: kids_focus
 platform: ios
 locale: us
-
-# ─────────────────────────────────────────────
-# BASELINE METADATA — Start here. Agent iterates from this.
-# This is the ONLY file the agent is allowed to edit.
-# ─────────────────────────────────────────────
-
-title: "Parent Controls - Screen Time"
-subtitle: "Parental Control & Kids Phone"
-keyword_field: "child lock,safety,app lock,monitor,screen limit,digital,wellbeing,family control,focus mode,bedtime"
+title: "Parental Control & Screen Time"
+subtitle: "App Lock, kids Phone & Safety"
+keyword_field: "child,lock,limit,family,monitor,focus,mode,wellbeing,bedtime,timer,blocker,tablet"

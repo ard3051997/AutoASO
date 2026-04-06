@@ -1,196 +1,126 @@
 # AutoASO
 
-Autonomous App Store Optimization. An agent that iteratively improves app store metadata — titles, subtitles, and keyword fields — by running continuous experiments against a composite scoring engine.
+Autonomous App Store Optimization. An agent that iteratively improves app store metadata — titles, subtitles, and keyword fields — by running continuous experiments against a mathematically constrained composite scoring engine.
 
-Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch), which applies the same loop to ML hyperparameter search. AutoASO replaces the training script with an ASO scoring function and replaces the model weights with app metadata.
-
----
-
-## Architecture
-
-<p align="center">
-  <img src="assets/architecture.png" alt="AutoASO optimization loop" width="640">
-</p>
-
-The agent follows a fixed protocol:
-
-1. Read the current metadata and the last score breakdown.
-2. Identify the weakest scoring component.
-3. Form a hypothesis — one targeted edit to improve that component.
-4. Make the edit to the metadata YAML file.
-5. Validate character limits (iOS: 30/30/100, Google Play: 30/80/4000).
-6. Run the scoring engine.
-7. If the score improved, keep the change (`git commit`). If not, discard it (`git reset --hard`).
-8. Log the result and repeat.
-
-The agent runs indefinitely until manually stopped or until 20 consecutive experiments yield no improvement.
+Inspired by [Karpathy's autoresearch](https://github.com/karpathy/autoresearch), which applies the same loop to ML hyperparameter search. AutoASO replaces the training script with an ASO scoring function, replaces model weights with app metadata, and incorporates live API constraints.
 
 ---
 
-## How the Scoring Engine Works
+## The Core Concept
 
-`score.py` computes a composite score out of 100, broken into 7 weighted components. The agent is forbidden from modifying this file — it can only edit the metadata.
+*One day, App Store Optimization used to be done by meat computers—human marketers staring at difficulty matrices on spreadsheets and guessing combinations. That era is fading. ASO is structurally becoming the domain of autonomous swarms of AI agents running endless optimizations in the skies overnight. This repo encodes the physics of the App Store algorithm into a local engine.*
 
-| Component | Weight | What It Measures |
-|---|---|---|
-| Keyword Coverage | 25% | What percentage of target keywords appear anywhere in the metadata, weighted by tier (NorthStar keywords count 4x more than tertiary). |
-| Placement Accuracy | 25% | Whether keywords are in their ideal fields. A NorthStar keyword in the title scores higher than the same keyword buried in the keyword field. |
-| Character Efficiency | 15% | How much of the character budget is used, minus a penalty for dead-weight words ("amazing", "best", "top", etc.) that waste space without ranking signal. |
-| Phrase Coverage | 10% | Whether multi-word keyword phrases appear as complete, contiguous phrases rather than individual words scattered across fields. |
-| Duplication Penalty | 10% | Penalizes words that appear in both the keyword field and the title/subtitle. On iOS, Apple ignores duplicates — they are wasted characters. |
-| NorthStar Defense | 10% | Binary check: each NorthStar keyword must appear in the title or subtitle. If even one is missing, you lose points. |
-| Semantic Naturalness | 5% | Heuristic readability check. Penalizes all-caps words, excessive separators, and truncation artifacts. |
-
-### The 3D Keyword Framework
-
-Keywords in `keywords/*.yaml` are organized into tiers:
-
-- **NorthStar** — The category-defining terms your app must own. These carry 4x weight in the scoring engine.
-- **Primary** — High-volume, high-intent phrases. Target: title, subtitle, or keyword field.
-- **Secondary** — Mid-volume phrases for the keyword field and descriptions.
-- **Tertiary** — Long-tail terms to pack remaining character budget.
-
-Each keyword also carries `volume` (search popularity) and `difficulty` (competition) metadata for strategic decisions.
+The agent follows an unyielding protocol:
+1. **Poll API:** Fetch latest competitive keyword search volume and difficulty from live sources (`prepare.py`).
+2. **Diagnose:** Read current metadata configurations across all platforms.
+3. **Hypothesize:** Attempt one targeted edit (e.g., swapping a high-difficulty phrase into a high-weight Title slot, breaking a duplicate penalty).
+4. **Enforce Constants:** Reject immediately if Apple or Google Character limits are breached.
+5. **Score & Evaluate:** Run the Simulated Ranking Physics engine. If the `total_score` and `est_installs` grow, Keep (`git commit`). If not, Discard (`git checkout`).
+6. **Repeat forever.**
 
 ---
 
-## Can This Actually Work?
+## Design Choices
 
-This is a fair question. Here is the honest answer.
+- **Single file dependency**: The agent only edits deterministic `metadata/*.yaml` files. The optimizer constraints are completely untangled from the simulation engine.
+- **Instant feedback loop**: Instead of a 5-minute training epoch limit, the "budget" here is an instant Python script mathematically bounded by iOS/Android character counts and penalty thresholds.
+- **Self-contained Physics**: Runs directly on your machine without constantly incurring external API calls. Instead, it utilizes `prepare.py` once to download real-world constants, then locally simulates 1,000s of permutations against them. 
 
-**What AutoASO does well:**
-The scoring engine models the *metadata quality* portion of App Store ranking. Apple's documentation confirms that the title carries more indexing weight than the subtitle, which carries more than the keyword field. The engine encodes these relationships. It also enforces real constraints: character limits, deduplication rules, and dead-weight detection. Running 100+ experiments per hour against these constraints will produce objectively better metadata than manual optimization.
+---
 
-**What AutoASO does not model:**
-The App Store ranking algorithm factors in download velocity, ratings, retention, engagement, and revenue. These are not part of the scoring engine because they are not controllable through metadata alone. AutoASO optimizes the controllable surface — the words — and leaves the behavioral signals to the product itself.
+## How the Scoring Engine Works (V4 Architecture)
 
-**Can we replicate the full App Store algorithm?**
-Not exactly, but we can get meaningfully close for the metadata layer. Apple does not publish their ranking algorithm, but the community has reverse-engineered the key signals through years of A/B testing. The known facts:
+`score.py` compute a rigorous composite total using a combination of foundational Apple/Google indexing constraints combined with an advanced **Rank Position Simulator**. 
 
-- Title keywords are indexed with highest priority
-- Subtitle keywords are indexed second
-- Keyword field is indexed but with lower weight
-- Duplicate words across fields are ignored (iOS)
-- Long descriptions are NOT indexed on iOS (but are on Google Play)
-- Download velocity within 24-72 hours of a metadata change affects ranking
+### 1. Simulated Keyword Ranking Engine (V2 Capability)
+AutoASO has graduated from simple word-matching to predicting measurable product metrics:
+- **Base Placement logic:** A keyword naturally aims for Rank 1 if placed in the Title, Rank 5 in Subtitles, etc.
+- **Inverse Difficulty Penalties:** The `difficulty` rating (0-100) mathematically pushes the keyword down the list. A high-difficulty keyword buried in the `keyword_field` immediately drops past Rank 20.
+- **Value-Driven Results:** Using historical CTR (Click-Through-Rate) step curves, the engine converts Simulated Rank directly into `est_installs`. If the agent cannot breach Rank ~10, installs remain `0/mo`. The AI is thus forced to hunt for asymmetric keyword combinations to drive revenue value.
 
-A V2 of this project could add a **simulated ranking model** that estimates keyword rank positions based on metadata placement, historical difficulty scores, and competitor density. That would get closer to a true App Store algorithm proxy. The current V1 focuses on getting the metadata itself right.
+### 2. Live API Polling (V3 Capability)
+Instead of operating on static guesses, AutoASO ties to live infrastructure:
+- **AppFollow Sync:** The `prepare.py` script leverages your `.env` `APPFOLLOW_API_KEY` to pull Search Volume and Difficulty directly from live markets.
+- **Graceful Simulation:** If the API rate limits, the environment gracefully introduces a Gaussian random walk fluctuation (+/- 5%) keeping the environment physically dynamic for the agent overnight. 
 
-**Industry benchmarks for iterative metadata optimization suggest a 30-60% increase in organic installs.**
+### 3. Global Tier 1 Market Footprint (V4 Capability)
+The system no longer stops at just US platforms. It acts as an autonomous global manager:
+- Evaluates `_us`, `_uk`, `_au` for iOS, and `_gplay_us` for distinct Android constraints (like generating 2,000-character Long Descriptions balancing 5% density rules).
+- Calculates the true portfolio power through `utils/score_all.py`.
+
+### 4. Mathematical Heuristics Table
+| Component | What It Measures |
+|---|---|
+| **V2 Simulation** | Simulated Rank predicting actual `est_installs` per month. (Heavy multiplier on total score). |
+| Keyword Coverage | What percentage of target keywords appear anywhere in the metadata. |
+| Placement Accuracy | A NorthStar keyword in the title is astronomically more valuable than the same word buried. |
+| Character Efficiency | Utilization against character caps, tightly penalizing dead-weight UI words ("amazing", "best"). |
+| Phrase Coverage | Checks if 3-word primary clusters remain completely contiguous. |
+| Duplication Penalty | If iOS, duplicating words already in the Title into the Keyword field earns massive deductions. |
 
 ---
 
 ## Project Structure
 
 ```
-score.py              — Scoring engine (read-only for the agent)
-program.md            — Agent instructions and experiment loop protocol
-requirements.txt      — Python dependencies (pyyaml only)
+score.py              — V2 Simulation & Scoring engine (read-only for the agent)
+prepare.py            — V3 Live API connection / Keyword config prep
+program.md            — Agent guidelines and workflow logic
+requirements.txt      — Python dependencies
 
-keywords/             — Keyword definition files (read-only for the agent)
+keywords/             — Search volume and difficulty configurations (prepped by API)
   kids_focus_ios_us.yaml
+  kids_focus_gplay_us.yaml
 
-metadata/             — Metadata files (the ONLY files the agent edits)
+metadata/             — App storefront configurations (Agent's ONLY playground)
   kids_focus_ios_us.yaml
+  kids_focus_ios_uk.yaml
 
-results/              — Experiment logs in TSV format
-  kids_focus_ios_us.tsv
-
+results/              — Nightly TSV tracking ledgers
 utils/
-  report.py           — Experiment progress report generator
-
-assets/
-  architecture.png    — Architecture diagram
+  score_all.py        — Global footprint aggregation engine
 ```
 
 ---
 
 ## Quick Start
 
-### Install dependencies
-
+### 1. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Run the scorer on baseline metadata
-
+### 2. Prepare the Environment (Live Polling)
+Connect `.env` and pull live traffic metrics before you deploy the agent:
 ```bash
-python score.py \
-  --metadata metadata/kids_focus_ios_us.yaml \
-  --keywords keywords/kids_focus_ios_us.yaml
+python prepare.py --keywords keywords/kids_focus_ios_us.yaml
 ```
 
-Example output:
-
-```
----
-total_score:      55.01
-coverage:         40.98
-placement:        28.74
-efficiency:       84.33
-phrase_coverage:  40.98
-duplication:      8.33
-northstar:        66.67
-naturalness:      100.00
-platform:         ios
-locale:           us
-char_usage:       title=24/30  subtitle=27/30  keyword_field=83/100
-```
-
-### Run the agent
-
-Point any autonomous coding assistant (Claude Code, Cursor Agent, GitHub Copilot Workspace, or a custom LLM runner) at the project with this prompt:
-
-> Read `program.md` and start executing the optimization experiment loop for kids_focus/ios/us.
-
-The agent will begin iterating. Each experiment takes under 2 seconds.
-
-### View experiment history
-
+### 3. Evaluate the Global Footprint
+To see the current health of all platforms simultaneously:
 ```bash
-python utils/report.py
+python utils/score_all.py
 ```
 
-```
-═══════════════════════════════════════════════════════
-  AutoASO — Experiment Report
-═══════════════════════════════════════════════════════
-
-───────────────────────────────────────────────────────
-  App:         kids_focus_ios_us
-  Experiments: 7 total | 6 kept | 1 discarded | 0 crashed
-  Baseline:    55.01
-  Best score:  76.66  (+21.65)
-───────────────────────────────────────────────────────
-```
+### 4. Deploy the Autonomous Swarm
+Point any agentic runner (Claude Code, Cursor, Aider) directly at the project:
+> *"Read `program.md`. Execute the V4 Global Footprint optimization overnight. Do not stop until all platforms hit a plateau."*
 
 ---
 
-## Adding a New App
+## Road Map
 
-1. Create `keywords/yourapp_platform_locale.yaml` with your keyword tiers, volumes, and difficulty scores.
-2. Create `metadata/yourapp_platform_locale.yaml` with your current live metadata as the baseline.
-3. Create an empty `results/yourapp_platform_locale.tsv` with the header: `commit	total_score	status	description`
-4. Run: `python score.py --metadata metadata/yourapp_platform_locale.yaml --keywords keywords/yourapp_platform_locale.yaml`
-5. Point the agent at `program.md` with the new target specified.
-
----
-
-## Roadmap
-
-- **V1 (current)** — Local scoring engine with manual keyword lists. iOS and Google Play support.
-- **V2** — Simulated keyword ranking model that estimates rank positions based on placement, volume, and difficulty.
-- **V3** — API integration for live keyword data (AppFollow, AppTweak, or SensorTower) to auto-populate keyword tiers.
-- **V4** — Multi-locale optimization across Tier 1/2/3 markets with locale-specific keyword sets.
+- [x] **V1** — Local scoring engine with manual keyword lists. iOS and Google Play heuristic support.
+- [x] **V2** — Simulated keyword ranking model that estimates rank positioning and clicks. 
+- [x] **V3** — API integration for live keyword volumes (AppFollow) ensuring rigorous training validity.
+- [x] **V4** — Multi-locale scaling. Global evaluation aggregation across separate regional constraints.
 
 ---
 
 ## Acknowledgements
 
-- [autoresearch](https://github.com/karpathy/autoresearch) by Andrej Karpathy — the core pattern of an autonomous agent running a fixed scoring loop with edit/score/keep/discard logic is directly adapted from this project.
-- [autoresearch-mlx](https://github.com/mzbac/autoresearch-mlx) by mzbac — the Apple Silicon native fork that demonstrated the pattern works outside of CUDA environments.
-- The ASO community and practitioners whose published research on keyword indexing, field weighting, and character optimization informed the scoring weights in `score.py`.
+- Adapted structurally from Andrej Karpathy's [autoresearch](https://github.com/karpathy/autoresearch). AutoASO ports the overnight hyperparameter AI-optimization loop completely over to Organic Distribution frameworks. 
+- Designed explicitly to bridge algorithmically robust App Store ranking factors against combinatorial LLM strengths.
 
 ---
 

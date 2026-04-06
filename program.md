@@ -29,7 +29,11 @@ Run these steps once before starting the loop:
    git checkout -b autoaso/kids_focus_ios_us_$(date +%Y%m%d)
    ```
 3. **Read the keyword file**: `keywords/kids_focus_ios_us.yaml` — understand all keyword tiers, volumes, and the blacklist.
-4. **Read the current metadata**: `metadata/kids_focus_ios_us.yaml` — this is your starting point.
+4. **Fetch Live Keyword Data**: 
+   ```bash
+   python prepare.py --keywords keywords/kids_focus_ios_us.yaml
+   ```
+5. **Read the current metadata**: `metadata/kids_focus_ios_us.yaml` — this is your starting point.
 5. **Establish baseline score**:
    ```bash
    python score.py \
@@ -154,6 +158,15 @@ You do NOT stop unless:
 - You have scored 0 improvements in the last **20 consecutive experiments**.
 
 If stuck for 20 experiments: log a summary, write "PLATEAU REACHED" in the results TSV, and stop gracefully.
+
+---
+
+## Global Footprint Optimization (V4 Mode)
+
+If the human asks you to "optimize globally" or "execute V4", you do the following:
+1. Identify all files in `metadata/` (e.g., `_us`, `_uk`, `_au`).
+2. Iteratively run the Experiment Loop for EACH locale sequentially.
+3. Once all locales plateau, run `python utils/score_all.py` to generate the Global Footprint report and present it to the human.
 
 ---
 

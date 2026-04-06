@@ -1,81 +1,81 @@
 app: kids_focus
-platform: ios
+platform: gplay
 locale: us
 keywords:
 - keyword: screen time
   tier: northstar
-  volume: 75
-  difficulty: 65
+  volume: 89
+  difficulty: 71
   cluster: screen_time
 - keyword: parental control
   tier: northstar
-  volume: 77
-  difficulty: 73
+  volume: 85
+  difficulty: 71
   cluster: parental
 - keyword: parent controls
   tier: northstar
-  volume: 69
+  volume: 60
   difficulty: 62
   cluster: parental
 - keyword: app lock
   tier: primary
-  volume: 54
-  difficulty: 49
+  volume: 63
+  difficulty: 50
   cluster: control
 - keyword: kids phone
   tier: primary
-  volume: 56
+  volume: 57
   difficulty: 49
   cluster: kids
 - keyword: screen limit
   tier: primary
-  volume: 50
-  difficulty: 44
+  volume: 51
+  difficulty: 42
   cluster: screen_time
 - keyword: child lock
   tier: primary
-  volume: 43
-  difficulty: 41
+  volume: 41
+  difficulty: 40
   cluster: control
 - keyword: family control
   tier: primary
   volume: 47
-  difficulty: 44
+  difficulty: 43
   cluster: parental
 - keyword: child safety
   tier: secondary
-  volume: 37
-  difficulty: 35
+  volume: 41
+  difficulty: 36
   cluster: safety
 - keyword: phone monitor
   tier: secondary
-  volume: 38
-  difficulty: 32
+  volume: 35
+  difficulty: 33
   cluster: monitoring
 - keyword: focus mode
   tier: secondary
-  volume: 32
+  volume: 35
   difficulty: 28
   cluster: focus
 - keyword: screen blocker
   tier: secondary
-  volume: 31
+  volume: 29
   difficulty: 31
   cluster: screen_time
 - keyword: kids tablet
   tier: secondary
-  volume: 26
+  volume: 28
   difficulty: 30
   cluster: kids
 - keyword: app timer
   tier: secondary
   volume: 26
-  difficulty: 23
+  difficulty: 21
   cluster: time_management
 - keyword: digital wellbeing
   tier: tertiary
-  volume: 19
-  difficulty: 20
+  volume: 21
+  difficulty: 21
   cluster: wellness
 - keyword: phone limit
   tier: tertiary
@@ -84,13 +84,13 @@ keywords:
   cluster: screen_time
 - keyword: bedtime mode
   tier: tertiary
-  volume: 16
-  difficulty: 19
+  volume: 14
+  difficulty: 18
   cluster: wellness
 - keyword: family safety
   tier: tertiary
   volume: 14
-  difficulty: 22
+  difficulty: 21
   cluster: safety
 - keyword: child protection
   tier: tertiary

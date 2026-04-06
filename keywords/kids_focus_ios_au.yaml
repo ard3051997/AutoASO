@@ -1,51 +1,51 @@
 app: kids_focus
 platform: ios
-locale: us
+locale: au
 keywords:
 - keyword: screen time
   tier: northstar
-  volume: 75
+  volume: 76
   difficulty: 65
   cluster: screen_time
 - keyword: parental control
   tier: northstar
-  volume: 77
-  difficulty: 73
+  volume: 83
+  difficulty: 69
   cluster: parental
 - keyword: parent controls
   tier: northstar
-  volume: 69
-  difficulty: 62
+  volume: 62
+  difficulty: 61
   cluster: parental
 - keyword: app lock
   tier: primary
-  volume: 54
-  difficulty: 49
+  volume: 58
+  difficulty: 50
   cluster: control
 - keyword: kids phone
   tier: primary
-  volume: 56
-  difficulty: 49
+  volume: 51
+  difficulty: 46
   cluster: kids
 - keyword: screen limit
   tier: primary
-  volume: 50
-  difficulty: 44
+  volume: 49
+  difficulty: 42
   cluster: screen_time
 - keyword: child lock
   tier: primary
-  volume: 43
-  difficulty: 41
+  volume: 44
+  difficulty: 40
   cluster: control
 - keyword: family control
   tier: primary
-  volume: 47
-  difficulty: 44
+  volume: 48
+  difficulty: 45
   cluster: parental
 - keyword: child safety
   tier: secondary
-  volume: 37
-  difficulty: 35
+  volume: 38
+  difficulty: 36
   cluster: safety
 - keyword: phone monitor
   tier: secondary
@@ -54,48 +54,48 @@ keywords:
   cluster: monitoring
 - keyword: focus mode
   tier: secondary
-  volume: 32
-  difficulty: 28
+  volume: 33
+  difficulty: 29
   cluster: focus
 - keyword: screen blocker
   tier: secondary
-  volume: 31
-  difficulty: 31
+  volume: 28
+  difficulty: 30
   cluster: screen_time
 - keyword: kids tablet
   tier: secondary
-  volume: 26
-  difficulty: 30
+  volume: 29
+  difficulty: 31
   cluster: kids
 - keyword: app timer
   tier: secondary
-  volume: 26
+  volume: 27
   difficulty: 23
   cluster: time_management
 - keyword: digital wellbeing
   tier: tertiary
-  volume: 19
-  difficulty: 20
+  volume: 21
+  difficulty: 19
   cluster: wellness
 - keyword: phone limit
   tier: tertiary
   volume: 17
-  difficulty: 20
+  difficulty: 19
   cluster: screen_time
 - keyword: bedtime mode
   tier: tertiary
   volume: 16
-  difficulty: 19
+  difficulty: 17
   cluster: wellness
 - keyword: family safety
   tier: tertiary
-  volume: 14
+  volume: 15
   difficulty: 22
   cluster: safety
 - keyword: child protection
   tier: tertiary
-  volume: 12
-  difficulty: 25
+  volume: 11
+  difficulty: 24
   cluster: safety
 blacklist:
 - amazing
